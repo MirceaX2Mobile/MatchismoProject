@@ -222,7 +222,7 @@ int cardCounter=0;
                             [self.otherCards addObject:otherCard];
                             cardCounter++;
                         }
-                        if (cardCounter == 2){
+                        if ([self.otherCards count] == 2) { // <- aici era cardCounterul vechi
                             int matchScore = [card match:self.otherCards];
                             cardCounter = 0;
                             
@@ -250,7 +250,7 @@ int cardCounter=0;
                                 card1.chosen= NO;
                                 card2.chosen = NO;
                             }
-                            
+                           
                         }
                     }
                 }
