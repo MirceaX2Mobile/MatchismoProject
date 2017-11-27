@@ -8,6 +8,8 @@
 
 #import "CardMatchingGame.h"
 #import "PlayingCard.h"
+#import "ConverterToAttribute.h"
+#import "SetCard.h"
 
 @interface CardMatchingGame()
 //using readwrite , because we want to redeclare a readonly
@@ -15,6 +17,7 @@
 @property (nonatomic,strong) NSMutableArray *cards; // of Card
 @property (nonatomic) BOOL gameMode2Cards;
 @property (nonatomic,strong) NSMutableArray *otherCards;
+@property (nonatomic,strong) ConverterToAttribute *converter;
 
 @end
 
@@ -27,6 +30,20 @@ NSString *status;
     return _cards;
 }
 
+- (NSMutableAttributedString *)historyForNormalGame {
+    if(!_historyForNormalGame) {
+        _historyForNormalGame = [[NSMutableAttributedString alloc] init];
+    }
+    return _historyForNormalGame;
+}
+
+- (NSMutableAttributedString *)historyForSetGame {
+    if(!_historyForSetGame) {
+        _historyForSetGame = [[NSMutableAttributedString alloc] init];
+    }
+    return _historyForSetGame;
+}
+
 - (NSMutableArray *)otherCards {
     if(!_otherCards) {
         _otherCards = [[NSMutableArray alloc] init];
@@ -34,11 +51,19 @@ NSString *status;
     return _otherCards;
 }
 
+- (ConverterToAttribute *)converter {
+    if(!_converter) {
+        _converter = [[ConverterToAttribute alloc] init];
+    }
+    return _converter;
+}
+
 - (instancetype)initWhitCardCount:(NSUInteger)count usingDeck:(Deck *)deck withGameMode:(BOOL)gameMode{
     self = [super init];
     if(self) {
         self.gameMode2Cards = gameMode;
-        self.scoreInfo = @"You didn't choose anything.";
+       // self.scoreInfo = @"You didn't choose anything.";
+        self.scoreInfo = [[NSAttributedString alloc] initWithString:@"You didn't choose anything!" ];
         for (int i = 0;i < count; i++) {
             Card *card = [deck drawRandomCard];
             if(card){
@@ -51,6 +76,25 @@ NSString *status;
     }
     return self;
 }
+
+-(NSAttributedString *)scoreInfoAttrString:(NSArray *)cardsArray withPoints:(NSInteger)newPoint isMatch:(BOOL)match{
+    ConverterToAttribute *converter = [[ConverterToAttribute alloc] init];
+    NSMutableAttributedString *finalString = nil;
+    if(match) {
+        finalString = [[NSMutableAttributedString alloc] initWithString:@"You matched "];
+    }else {
+        finalString = [[NSMutableAttributedString alloc] initWithString:@"You mismatched "];
+    }
+    for(int i=0;i<[cardsArray count];i++) {
+        [finalString appendAttributedString:[converter convert:[cardsArray objectAtIndex:i] withNewLine:NO]];
+        [finalString appendAttributedString:[[NSAttributedString alloc] initWithString:@", "]];
+    }
+    NSString *point = [[NSString alloc] initWithFormat:@" for %ld points",(long)newPoint];
+    NSAttributedString *points = [[NSAttributedString alloc] initWithString:point];
+                                  [finalString appendAttributedString:points];
+    return finalString;
+}
+
 -(NSString *)scoreInfoString:(NSArray *)cardsArray {
     int stats[3] = {-1, -1, -1};
     int sum = 0;
@@ -117,14 +161,27 @@ int cardCounter=0;
 
 -(void)chooseCardAtIndex:(NSUInteger)index {
     Card *card = [self cardAtIndex:index];
+    ConverterToAttribute *converter = [[ConverterToAttribute alloc] init];
     
     if (!card.isMatched) {
-        self.scoreInfo = [NSString stringWithFormat:@"You choose: %@",card.contents];
+        
+        //self.scoreInfo = [NSString stringWithFormat:@"You choose: %@",card.contents];
+        if(!self.gameMode2Cards){
+            NSMutableAttributedString *finalString = [[NSMutableAttributedString alloc] initWithString:@"You choose: "];
+            [finalString appendAttributedString:[converter convert:card withNewLine:NO]];
+            self.scoreInfo = finalString;
+        }else {
+            NSAttributedString *finalString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"You choose: %@",card.contents]];
+             self.scoreInfo = finalString;
+        }
         if (card.isChosen) {
             if(self.gameMode2Cards == true){
-            self.scoreInfo = @"You didn't choose anything!";
+        //    self.scoreInfo = @"You didn't choose anything!";
+            self.scoreInfo = [[NSAttributedString alloc] initWithString:@"You didn't choose anything!" ];
+                
             }else {
-               self.scoreInfo = @"You didn't choose 3 cards!";
+         //      self.scoreInfo = @"You didn't choose 3 cards!";
+               self.scoreInfo = [[NSAttributedString alloc] initWithString:@"You didn't choose 3 cards!" ];
             }
             card.chosen = NO;
             if([self.otherCards containsObject:card]) {
@@ -141,12 +198,18 @@ int cardCounter=0;
                         int matchScore = [card match:self.otherCards];
                         if(matchScore) {
                             self.score += matchScore * MATCH_BONUS;
-                            self.scoreInfo = [NSString stringWithFormat:@"%@ %@ matched for %d points!",card.contents,otherCard.contents,matchScore * MATCH_BONUS];
+                          //  self.scoreInfo = [NSString stringWithFormat:@"%@ %@ matched for %d points!",card.contents,otherCard.contents,matchScore * MATCH_BONUS];
+                            self.scoreInfo = [self scoreInfoAttrString:@[card,otherCard] withPoints:matchScore * MATCH_BONUS isMatch:true];
+                            [self.historyForNormalGame appendAttributedString:self.scoreInfo];
+                            [self.historyForNormalGame appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
                             card.matched = YES;
                             otherCard.matched = YES;
                         } else {
                              self.score -= MISMATCH_PENALTY;
-                             self.scoreInfo = [NSString stringWithFormat:@"%@ %@ dont't match! %d point penalty!",card.contents,otherCard.contents,-MISMATCH_PENALTY];
+                           //  self.scoreInfo = [NSString stringWithFormat:@"%@ %@ dont't match! %d point penalty!",card.contents,otherCard.contents,-MISMATCH_PENALTY];
+                            self.scoreInfo = [self scoreInfoAttrString:@[card,otherCard] withPoints:-MISMATCH_PENALTY isMatch:false];
+                            [self.historyForNormalGame appendAttributedString:self.scoreInfo];
+                            [self.historyForNormalGame appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
                             otherCard.chosen = NO;
                         }
                         break;
@@ -165,17 +228,25 @@ int cardCounter=0;
                             
                             if(matchScore) {
                                 self.score += matchScore * MATCH_BONUS;
-                                self.scoreInfo = [self scoreInfoString:@[self.otherCards[0], self.otherCards[1], card]];
-                                PlayingCard *card1 = self.otherCards[0];
-                                PlayingCard *card2 = self.otherCards[1];
+                                
+                                self.scoreInfo = [self scoreInfoAttrString:@[self.otherCards[0], self.otherCards[1], card] withPoints:matchScore * MATCH_BONUS isMatch:true];
+                                [self.historyForSetGame appendAttributedString:self.scoreInfo];
+                                [self.historyForSetGame appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+                                
+                                SetCard *card1 = self.otherCards[0];
+                                SetCard *card2 = self.otherCards[1];
                                 card1.matched = YES;
                                 card2.matched = YES;
                                 card.matched = YES;
                             }
                             else {
                                 self.score -= MISMATCH_PENALTY;
-                                PlayingCard *card1 = self.otherCards[0];
-                                PlayingCard *card2 = self.otherCards[1];
+                                self.scoreInfo = [self scoreInfoAttrString:@[self.otherCards[0], self.otherCards[1], card] withPoints:-MISMATCH_PENALTY isMatch:false];
+                                [self.historyForSetGame appendAttributedString:self.scoreInfo];
+                                [self.historyForSetGame appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+                                
+                                SetCard *card1 = self.otherCards[0];
+                                SetCard *card2 = self.otherCards[1];
                                 card1.chosen= NO;
                                 card2.chosen = NO;
                             }
@@ -185,7 +256,10 @@ int cardCounter=0;
                 }
                 
             }
+            if(self.gameMode2Cards == true){
             self.score -= COST_TO_CHOOSE;
+            }
+                
             card.chosen = YES;
         }
     }
