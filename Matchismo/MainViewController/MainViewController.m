@@ -15,22 +15,28 @@
 
 @interface MainViewController ()
 @property (strong,nonatomic) Deck *deck;
-@property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
+
 
 
 @end
 
 
 @implementation MainViewController
-NSInteger cardIndex = -1;
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    for (UIView *view in self.cardViews) {
+
+        if([view isKindOfClass:PlayingCardView.class]) {
+            [view addGestureRecognizer:[[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeCard:)]];
+        }
+    }
 }
 
 - (CardMatchingGame *)game {
     if(!_game) {
-        _game = [[CardMatchingGame alloc] initWhitCardCount:[self.cardButtons count] usingDeck:[self createDeck] withGameMode:[self gameMode]];
+        _game = [[CardMatchingGame alloc] initWhitCardCount:[self.cardViews count] usingDeck:[self createDeck] withGameMode:[self gameMode]];
     }
     return _game;
 }
@@ -58,23 +64,38 @@ NSInteger cardIndex = -1;
 }
 
 - (void) redealCards{
-    CardMatchingGame *newGame = [[CardMatchingGame alloc] initWhitCardCount:[self.cardButtons count] usingDeck:[self createDeck] withGameMode:[self gameMode]];
+    CardMatchingGame *newGame = [[CardMatchingGame alloc] initWhitCardCount:[self.cardViews count] usingDeck:[self createDeck] withGameMode:[self gameMode]];
     self.game = newGame;
-    cardIndex = -1;
+    self.cardIndex = -1;
     [self updateUI];
+    for(PlayingCardView *view in self.cardViews) {
+        [view setAlpha:1];
+        [view addGestureRecognizer:[[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeCard:)]];
+    }
+    
 }
 
 - (IBAction)resetGame:(UIButton *)sender {
     [self redealCards];
 }
 
+//
 - (IBAction)touchCardButton:(UIButton *)sender {
-    cardIndex = (NSInteger)[self.cardButtons indexOfObject:sender];
+    self.cardIndex = (NSInteger)[self.cardButtons indexOfObject:sender];
     
-    [self.game chooseCardAtIndex:cardIndex];
+    [self.game chooseCardAtIndex:self.cardIndex];
     [self updateUI];
 }
 
+- (IBAction)swipeCard:(UISwipeGestureRecognizer *)sender {
+    self.cardIndex = (NSInteger)[self.cardViews indexOfObject:sender.view];
+    
+    
+    [self.game chooseCardAtIndex:self.cardIndex];
+    [self updateUI];
+}
+
+//
 - (void) updateUI {
     for(UIButton *cardButton in self.cardButtons) {
         NSInteger cardIndex = [self.cardButtons indexOfObject:cardButton];
@@ -97,8 +118,7 @@ NSInteger cardIndex = -1;
         [cardButton setAttributedTitle:[self titleForCard:card] forState:UIControlStateNormal];
         [cardButton setBackgroundImage:[self backgroundImageForCard:card] forState:UIControlStateNormal];
         cardButton.enabled = !card.isMatched;
-        
-        
+
     }
     self.scoreLabel.text = [NSString stringWithFormat:@"Score: %ld",(long)self.game.score];
     self.scoreInfoLabel.attributedText = self.game.scoreInfo;
@@ -114,6 +134,10 @@ NSInteger cardIndex = -1;
 
 - (UIImage *)backgroundImageForCard:(Card *)card {
     return [UIImage imageNamed:card.isChosen ? @"cardfront" : @"cardback"];
+}
+
+- (BOOL) backgroundCardView:(Card *)card {
+    return card.isChosen ? true:false;
 }
 
 @end

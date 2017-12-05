@@ -14,7 +14,6 @@
 @interface CardMatchingGame()
 //using readwrite , because we want to redeclare a readonly
 @property (nonatomic,readwrite) NSInteger score;
-@property (nonatomic,strong) NSMutableArray *cards; // of Card
 @property (nonatomic) BOOL gameMode2Cards;
 @property (nonatomic,strong) NSMutableArray *otherCards;
 @property (nonatomic,strong) ConverterToAttribute *converter;

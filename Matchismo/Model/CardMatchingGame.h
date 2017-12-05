@@ -14,7 +14,7 @@
 //designated  initiliazer
 - (instancetype)initWhitCardCount:(NSUInteger)count usingDeck:(Deck *)deck withGameMode:(BOOL)gameMode;
 
-
+@property (nonatomic,strong) NSMutableArray *cards; // of Card
 @property (nonatomic,strong) NSAttributedString *scoreInfo;
 @property (strong,nonatomic) NSMutableAttributedString *historyForNormalGame;
 @property (strong,nonatomic) NSMutableAttributedString *historyForSetGame;
