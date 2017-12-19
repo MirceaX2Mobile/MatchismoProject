@@ -22,6 +22,14 @@
 
 @implementation CardMatchingGame
 NSString *status;
+
+@synthesize cards = _cards;
+
+- (void) setCards:(NSMutableArray *)cards {
+    _cards = cards;
+}
+
+
 - (NSMutableArray *)cards {
     if(!_cards) {
         _cards = [[NSMutableArray alloc] init];

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 // To use Grid, simply alloc/init one, then
 //  decide what aspect ratio you want the things in the grid to have (cellAspectRatio)

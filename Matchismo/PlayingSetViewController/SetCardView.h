@@ -13,5 +13,6 @@
 @property (nonatomic,strong) NSString *symbol;
 @property (nonatomic,strong) NSString *shading;
 @property (nonatomic,strong) NSString *color;
+@property (nonatomic) BOOL wasAnimated;
 -(void)disable;
 @end

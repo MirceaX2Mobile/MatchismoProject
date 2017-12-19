@@ -12,6 +12,7 @@
 
 @property (nonatomic) NSUInteger rank;
 @property (strong, nonatomic) NSString *suit;
-@property (nonatomic) BOOL faceUp;
+@property (nonatomic) BOOL isFaceUp;
+@property (nonatomic) BOOL isEnabled;
 -(void)disable;
 @end

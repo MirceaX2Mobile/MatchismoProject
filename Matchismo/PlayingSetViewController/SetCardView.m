@@ -25,6 +25,10 @@
     [self setNeedsDisplay];
 }
 
+- (void) setWasAnimated:(BOOL)wasAnimated {
+    _wasAnimated = wasAnimated;
+}
+
 - (void) setNumber:(int)number {
     _number = number;
     [self setNeedsDisplay];
@@ -75,9 +79,7 @@
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
-    if (self){
-        
-    }
+    [self setup];
     return self;
 }
 
@@ -108,6 +110,7 @@
     
     [[UIColor blackColor] setStroke];
     [roundedRect stroke];
+    
     
     
     [self drawShape:self.number withShading:self.shading withColor:self.color draw:self.symbol];
@@ -307,6 +310,7 @@
 {
     CGContextRestoreGState(UIGraphicsGetCurrentContext());
 }
+
 
 
 @end

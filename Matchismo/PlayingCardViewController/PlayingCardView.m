@@ -35,6 +35,7 @@
 }
 
 -(void)setup {
+    self.isEnabled = true;
     self.backgroundColor = nil;
     self.opaque = NO;
     self.contentMode = UIViewContentModeRedraw;
@@ -56,12 +57,19 @@
     [self setNeedsDisplay];
 }
 
--(void)setFaceUp:(BOOL)faceUp {
-    _faceUp = faceUp;
+-(void)setIsFaceUp:(BOOL)faceUp {
+    _isFaceUp = faceUp;
     [self setNeedsDisplay];
 }
 
--(void)pinch:(UIPinchGestureRecognizer *)gesture {
+
+- (void)setIsEnabled:(BOOL)isEnabled {
+    _isEnabled = isEnabled;
+}
+
+
+
+- (void)pinch:(UIPinchGestureRecognizer *)gesture {
     if ((gesture.state == UIGestureRecognizerStateChanged) ||
         (gesture.state == UIGestureRecognizerStateEnded)) {
         self.faceCardScaleFactor *= gesture.scale;
@@ -71,6 +79,7 @@
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
+    
     if (self){
         
     }
@@ -107,7 +116,7 @@
     
     
     
-    if (self.faceUp) {
+    if (self.isFaceUp) {
         UIImage *faceImage = [UIImage imageNamed:[NSString stringWithFormat:@"%@%@", [self rankAsString], self.suit]];
         if (faceImage) {
             CGRect imageRect = CGRectInset(self.bounds,
@@ -245,6 +254,8 @@
 
 -(void)disable {
     [self setAlpha:0.5];
+    self.isEnabled=false;
+    
 }
 
 
